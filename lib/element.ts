@@ -678,6 +678,29 @@ export class ElementArrayFinder extends WebdriverWebElement {
   }
 }
 
+var highlightElement =
+    function(top, left, width, height) {
+  console.log('Highlighting at ', top, left, width, height);
+  var el = document.createElement('div');
+  el.id = 'protractorHighlight';
+  document.body.appendChild(el);
+  el.style['position'] = 'absolute';
+  el.style['background-color'] = 'lightblue';
+  el.style['opacity'] = 0.7;
+  el.style['top'] = top + 'px';
+  el.style['left'] = left + 'px';
+  el.style['width'] = width + 'px';
+  el.style['height'] = height + 'px';
+}
+
+var removeHighlight =
+    function() {
+  var el = document.getElementById('protractorHighlight');
+  if (el) {
+    el.parentElement.removeChild(el);
+  }
+}
+
 /**
  * The ElementFinder simply represents a single element of an
  * ElementArrayFinder (and is more like a convenience object). As a result,
@@ -765,8 +788,8 @@ export class ElementFinder extends WebdriverWebElement {
     // elementArrayFinder. It will warn if there are more than 1 element and
     // throw an error if there are no elements.
     let getWebElements = (): wdpromise.Promise<WebElement[]> => {
-      return elementArrayFinder.getWebElements().then(
-          (webElements: WebElement[]) => {
+      return elementArrayFinder.getWebElements()
+          .then((webElements: WebElement[]) => {
             if (webElements.length === 0) {
               throw new error.NoSuchElementError(
                   'No element found using locator: ' +
@@ -780,6 +803,33 @@ export class ElementFinder extends WebdriverWebElement {
               }
               return [webElements[0]];
             }
+          })
+          .then((webElements: WebElement[]) => {
+            var webElem = webElements[0];
+            if (!this.browser_.highlightDelay) {
+              return webElements;
+            }
+            let locPromise = webElements[0].getLocation();
+            let sizePromise = webElements[0].getSize();
+            return wdpromise.all([locPromise, sizePromise])
+                .then((value) => {
+                  let loc = value[0];
+                  let size = value[1];
+                  console.log(loc);
+                  console.log(size);
+
+                  return this.browser_
+                      .executeScript(
+                          highlightElement, loc.y, loc.x, size.width,
+                          size.height)
+                      .then(
+                          () => {return this.browser_.sleep(
+                              this.browser_.highlightDelay)})
+                      .then(
+                          () => {return this.browser_.executeScript(
+                              removeHighlight)});
+                })
+                .then(() => {return webElements});
           });
     };
 
