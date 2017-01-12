@@ -191,7 +191,6 @@ describe('expected conditions', function() {
 
       // TODO: Remove sleep when this is fixed:
       //    https://bugs.chromium.org/p/chromedriver/issues/detail?id=1500
-      browser2.sleep(250);
       browser2.switchTo().alert().accept();
     });
   });

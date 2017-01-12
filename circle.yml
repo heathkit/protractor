@@ -13,11 +13,13 @@ dependencies:
     - testapp/node_modules
   post:
     - ./node_modules/.bin/gulp lint
-    - ./node_modules/.bin/webdriver-manager update
-    - ./node_modules/.bin/webdriver-manager start:
+    - ./node_modules/.bin/webdriver-manager update --versions.chrome 2.25
+    - ./node_modules/.bin/webdriver-manager start --versions.chrome 2.25:
           background: true
     - cd testapp && npm update
     - npm start:
+          background: true
+    - sudo tcpdump -i lo -w $CIRCLE_ARTIFACTS/tcpdump.log:
           background: true
 
 test:
