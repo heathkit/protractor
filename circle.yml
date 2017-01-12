@@ -19,7 +19,7 @@ dependencies:
     - cd testapp && npm update
     - npm start:
           background: true
-    - sudo tcpdump -i lo -w $CIRCLE_ARTIFACTS/tcpdump.log:
+    - sudo tcpdump -i lo 'tcp && dst localhost' -w $CIRCLE_ARTIFACTS/localdump.pcap:
           background: true
 
 test:
